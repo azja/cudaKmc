@@ -130,7 +130,7 @@ void test() {
 				cudaMemcpy(d_sites,h_sites,sizeof(float4)*NSITES,cudaMemcpyHostToDevice));
 
 		timer.start();
-		findNeigboursXyz<<<16, 512>>>(d_sites, d_neigs, base1, base2, base3,
+		findNeigboursXyz<<<16, 512, 512 * sizeof(float) * 3>>>(d_sites, d_neigs, base1, base2, base3,
 				dimensions, radius, 8, 0, NSITES);
 		cudaDeviceSynchronize();
 		timer.stop();

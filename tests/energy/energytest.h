@@ -5,16 +5,15 @@
  *      Author: biborski
  */
 
-
 #ifndef ENERGYTEST_H_
 #define ENERGYTEST_H_
 
 namespace tests {
- namespace energy {
- void ising_1();
- }
- }
-
-
+namespace energy {
+namespace ising {
+void test();
+}
+}
+}
 
 #endif /* ENERGYTEST_H_ */

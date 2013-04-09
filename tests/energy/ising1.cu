@@ -17,22 +17,8 @@ __global__ void calcEnergy(float4* sites, int4 *neigs, int z, T calcer,
 		                   float* output, const U* params, int N, int nkind = 2){
 	int id = blockDim.x * blockIdx.x + threadIdx.x;
 	if(id < N) {
-		int4 temp = {0,0,0,0};
-		float result;
-        result = (static_cast<int>(calcer(sites[id].w, sites, neigs, z, id, params, nkind, temp)));
+		output[id] = (static_cast<int>(calcer(sites[id].w, sites, neigs, z, id, params, nkind)));
 
-		for(int i = 0;i < z; ++i)
-		result+= calcer(
-				           static_cast<int>(sites[id].w),
-				           sites,
-				           neigs,
-				           z,
-				           neigs[id * z + i].w,
-				           params,
-				           nkind,
-				           temp);
-
-		output[id] = result;
 	}
 
 }
@@ -126,10 +112,11 @@ static void b2Builder(float4* sites, float3 b1, float3 b2, float3 b3, float4 A,
 
 namespace tests {
 namespace energy {
+namespace ising {
 
 
 
-void ising_1() {
+void test() {
 
 	float4* h_sites;
 	int4* h_neigs;
@@ -193,9 +180,32 @@ void ising_1() {
 		CHECK_ERROR(
 						cudaMemcpy(d_params,energies,sizeof(float)*4,cudaMemcpyHostToDevice));
 
-		findNeigboursXyz<<<16, 512>>>(d_sites, d_neigs, base1, base2, base3,
+		//Neigbour - shared memory used
+				std::cout<<"-------------------------------------------------------------------------"<<std::endl;
+				std::cout<<"Looking for neigbours...";
+
+		timer.start();
+		findNeigboursXyz<<<16, 512, 512 * sizeof(float) *3>>>(d_sites, d_neigs, base1, base2, base3,
 				dimensions, radius, 8, 0, NSITES);
 		cudaDeviceSynchronize();
+        timer.stop();
+
+        std::cout<<"... found in "<<timer.elapsed()<<"ms (shared)"<<std::endl;
+
+        timer.reset();
+        /*
+        std::cout<<"And once again - looking for neigbours...";
+
+        timer.start();
+        findNeigboursXyz<<<16, 512>>>(d_sites, d_neigs, base1, base2, base3,
+        				dimensions, radius, 8, 0, NSITES);
+        		cudaDeviceSynchronize();
+                timer.stop();
+
+                std::cout<<"... found in "<<timer.elapsed()<<"ms (shared not used)"<<std::endl;
+
+                timer.reset();
+        */
 
 		CHECK_ERROR(
 								cudaMemcpy(h_neigs,d_neigs,sizeof(float4)*NSITES * NEIGS,cudaMemcpyDeviceToHost));
@@ -299,6 +309,7 @@ void ising_1() {
 		CHECK_ERROR(cudaFree(d_neigs));
 		CHECK_ERROR(cudaFree(d_params));
 		}
+}
 }
 }
 }
