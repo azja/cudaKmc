@@ -69,3 +69,37 @@ extern "C" void findNeigboursXyzCpu(const float4 * const sites,
 	}
 }
 
+/*
+ * sites[ dim.x * dim.y * dim.z * numOfAtoms]
+ * atoms[numOfAtoms]
+ */
+extern "C"  void LatticeBuilder(float4* sites, float3 b1, float3 b2, float3 b3,float4 * atoms, int numOfAtoms, int3 dim) {
+
+	for (int i = 0; i < dim.x; ++i) {
+		for (int j = 0; j < dim.y; ++j) {
+			for (int k = 0; k < dim.z; ++k) {
+
+				int id = i * dim.x * dim.y + j * dim.y + k;
+
+				for(int l =0;l<numOfAtoms;l++){
+
+					float4 A;
+					A.x = atoms[l].x;
+					A.y = atoms[l].y;
+					A.z = atoms[l].z;
+					A.w = atoms[l].w;
+
+					float4 siteToPut = { (b1.x * A.x + b2.x * A.y + b3.x * A.z) + i * b1.x
+											+ j * b2.x + k * b3.x, (b2.x * A.y + b2.y * A.y
+													+ b2.z * A.y) + i * b1.y + j * b2.y + k * b3.y, (b3.x
+															* A.z + b3.y * A.z + b3.z * A.z) + i * b1.z + j * b2.z
+															+ k * b3.z, A.w };
+					sites[id *numOfAtoms +l] = siteToPut;
+				}
+
+
+			}
+		}
+	}
+}
+
