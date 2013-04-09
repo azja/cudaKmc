@@ -18,7 +18,7 @@
  *			                               int id,
  *		                                   const T* parameters,
  *		                                   int atomsN);
- *
+ * U<T,R>
  *
  *
  * and another version:
