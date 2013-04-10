@@ -10,19 +10,12 @@
 
 #define N_ATOMS_ 2
 
-__constant__ float _energy_I[N_ATOMS_ * N_ATOMS_];
-__constant__ float _energy_II[N_ATOMS_ * N_ATOMS_];
-__constant__ float _energy_III[N_ATOMS_ * N_ATOMS_];
 
-__constant__ float _r1;
-__constant__ float _r2;
 
 namespace kmcenergy {
 namespace ising {
 
-void prepare(float* e_I);
-void prepare(float* e_I, float r1);
-void prepare(float* e_I, float r1, float r2);
+
 
 struct PairEnergy_I {
 	/* This function provides energy of interacting atom according to:

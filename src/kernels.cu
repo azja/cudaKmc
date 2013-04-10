@@ -1,6 +1,6 @@
 #include "../headers/kernels.cuh"
 
-extern "C" __global__ void findNeigboursXyz(const float4 * const sites,
+__global__ void findNeigboursXyz(const float4 * const sites,
 		int4 * neigbours, float3 base1, float3 base2, float3 base3,
 		int3 dimensions, float radius, int offset, int beginFrom, int size) {
 
@@ -77,4 +77,50 @@ extern "C" __global__ void findNeigboursXyz(const float4 * const sites,
 		}
 
 	}
+}
+
+
+/*
+ * SimulationInput interface should provide fields as defined in siminput.cuh:
+ *
+ * uint N       - total number of sites
+ * uint n_v     - number of vacancies/active items
+ * uint z       - maximal number of items(atoms) considered for interaction
+ * uint z_t     - maximal number of items(atoms) considered for performing transition (e.g. jumping atoms)
+ * uint atoms_n - number of atoms kind
+ * float4* sites [N]
+ * float* transitions [n_v * z_T]
+ * uint4* jumpingNeigbours[n_v * z_T]
+ * uint* vacancies [n_v]
+ * uint4* neigbours [n_v * z]
+ *
+ */
+
+ template<typename SimulationInput>
+__global__ void calculateTransitionParameter(SimulationInput input) {
+
+	typename SimulationInput::EnergyExchange exchangeCalcer;
+	typename SimulationInput::SaddleEnergyFunctor saddleCalcer;
+
+	int thId = blockIdx.x * blockDim.x + threadIdx.x;
+	if (thId < input.N) {
+		int id1 = input.vacancies[thId];
+
+		for (int i = 0; i < input.z_t; ++i) {
+			int id2 = input.jumpingNeigbours[thId * input.z_t + i].w;
+
+			input.transitions[thId * input.z_t + i] =
+			/*0.5 x dE */
+
+				0.5	* exchangeCalcer(id1, id1, input.sites, input.neigbours,
+							input.N, input.exchangeEnergyCalculation,
+							input.atoms_n)
+					+
+					/* Es */
+					saddleCalcer(id1, id2, input.sites, input.neigbours,
+							input.saddleEnergyCalculation);
+
+		}
+	}
+
 }

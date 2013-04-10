@@ -33,6 +33,7 @@
 
 namespace algorithms {
 
+
 template<typename EnergyParameters, typename EnergyKernel>
 struct ExchangeEnergy {
 
@@ -85,6 +86,22 @@ struct ExchangeEnergy {
 
 		return E1 - E0;
 
+	}
+};
+
+
+
+struct ConstantSaddleEnergy {
+
+	/*
+	 * Provides saddle point - barrier value according to the type of jumping atom
+	 * Some of funtor paramaters are reduntant - they are kept to maintain consistency
+	 * of interface.
+	 */
+	__host__ __device__  float operator()(int id1, int id2 , const float4* const sites ,
+			const int4 * const neigbours, const float* params ) {
+
+		return params[static_cast<int>(sites[id1].w)];
 	}
 };
 
