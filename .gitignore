@@ -1,0 +1,21 @@
+# Binary files
+*.cubin
+*.out
+*.so
+*.a
+*.o
+
+# Directories
+bin/
+Debug/
+Release/
+
+#Project files
+.cproject
+.project
+
+# Other files
+*.log
+*.tmp
+*.txt
+*~
