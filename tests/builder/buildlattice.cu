@@ -2,13 +2,14 @@
  * buildlattice.c
  *
  *  Created on: 08-04-2013
- *      Author: biborski
+ *      Author:Andrzej  Biborski
  */
 
 #include "../../headers/cpukernels.h"
 #include <stdlib.h>
 #include <iostream>
 #include <stdio.h>
+#include "buildlattice.h"
 
 namespace tests {
 namespace lattice {
@@ -41,9 +42,6 @@ float4* cubicL10(int size) {
 
 float4* cubicB2(int size) {
 
-	float3 cell1 = { 2.86f, 0.0f, 0.0f };
-	float3 cell2 = { 0.0f, 2.86f, 0.0f };
-	float3 cell3 = { 0.0f, 0.0f, 2.86f };
 
 	float4 atom1 = { 0.0f, 0.0f, 0.0f, 0.0f };
 	float4 atom2 = { 0.5f, 0.5f, 0.5f, 1.0f };
@@ -55,7 +53,7 @@ float4* cubicB2(int size) {
 
 	int3 dim = { size, size, size };
 	float4* sites = (float4*) malloc(size * size * size * sizeof(float4) * 2);
-	LatticeBuilder(sites, cell1, cell2, cell3, atoms, 2, dim);
+	LatticeBuilder(sites, b2cell1, b2cell2, b2cell3, atoms, 2, dim);
 
 	return sites;
 }

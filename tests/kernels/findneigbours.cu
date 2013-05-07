@@ -22,7 +22,7 @@ static void b2Builder(float4* sites, float3 b1, float3 b2, float3 b3, float4 A,
 						+ j * b2.x + k * b3.x, (b2.x * A.y + b2.y * A.y
 								+ b2.z * A.y) + i * b1.y + j * b2.y + k * b3.y, (b3.x
 										* A.z + b3.y * A.z + b3.z * A.z) + i * b1.z + j * b2.z
-										+ k * b3.z };
+										/* Es */								+ k * b3.z };
 				sa.w = 1.0f;
 
 				float4 sb = { (b1.x * B.x + b2.x * B.y + b3.x * B.z) + i * b1.x
@@ -130,9 +130,10 @@ void test() {
 				cudaMemcpy(d_sites,h_sites,sizeof(float4)*NSITES,cudaMemcpyHostToDevice));
 
 		timer.start();
+		for(int i=0; i < 1000; ++i) {
 		findNeigboursXyz<<<16, 512, 512 * sizeof(float) * 3>>>(d_sites, d_neigs, base1, base2, base3,
 				dimensions, radius, 8, 0, NSITES);
-		cudaDeviceSynchronize();
+		cudaDeviceSynchronize();}
 		timer.stop();
 
 		cudaTime = timer.elapsed();

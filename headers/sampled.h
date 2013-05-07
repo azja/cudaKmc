@@ -15,22 +15,22 @@ namespace samples {
 
 class SampleDevice: public Sample {
 
-	virtual void calculateNeigbours();
-	virtual void allocate(uint N, uint n_v, uint z, uint z_t);
+    virtual void calculateNeigbours();
+    virtual void allocate(uint N, uint n_v, uint z, uint z_t);
 
 public:
 
-	SampleDevice(uint N, float4 * const sites, nbuilder::NeigbourFinder* finder) :
-		Sample(N, finder) {
-	}
+    SampleDevice(uint N, float4 * const sites, nbuilder::NeigbourFinder* finder) :
+        Sample(N, finder) {
+    }
 
-	SampleDevice(uint N, nbuilder::NeigbourFinder* finder) :
-		Sample(N, finder) {
-	}
+    SampleDevice(uint N, nbuilder::NeigbourFinder* finder) :
+        Sample(N, finder) {
+    }
 
-	virtual uint getNumberOf(definitions::Atom i) const;
+    virtual uint getNumberOf(definitions::Atom i) const;
 
-	~SampleDevice();
+    ~SampleDevice();
 };
 
 }/* samples*/
