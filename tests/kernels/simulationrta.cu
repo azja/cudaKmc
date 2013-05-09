@@ -23,9 +23,14 @@
 namespace tests {
 namespace simulations {
 
-float stdrand() {
 
-    return static_cast<float>(rand()) / RAND_MAX;
+float stdrand() {
+    /*return static_cast<float>(rand()) / RAND_MAX;*/
+    static float start = time(0);
+    float rnd,IA=65539,IM=2147483648.0;
+    rnd=fmod(IA*start,IM);
+    start=rnd;
+    return rnd/IM;
 }
 
 float h_energies[9] = { -0.12f, -0.125f, 0.04f, -0.125f, -0.05f, -0.04f, 0.04f, -0.04f,
@@ -40,7 +45,7 @@ void testRta(int sample_size) {
 
     int z = 8;
     int z_t = z;
-    int n_v = 0.037 * CUBE_SIZE * CUBE_SIZE * CUBE_SIZE * 2;
+    int n_v = 1460;//0.045 * CUBE_SIZE * CUBE_SIZE * CUBE_SIZE * 2;
     int atoms_n = 3;
     int N = CUBE_SIZE * CUBE_SIZE * CUBE_SIZE * 2;
     int3 dims = { CUBE_SIZE, CUBE_SIZE, CUBE_SIZE };
@@ -53,23 +58,35 @@ void testRta(int sample_size) {
     simulationAtoms[2] = definitions::Al;
     float4* h_sites = tests::lattice::cubicB2(CUBE_SIZE);
 
-    /*
-    for (int i = 0; i < n_v; ++i) {
-        h_sites[i].w = 2;
-    }
-    */
+
+
+
 
     int *h_vacancies = (int*)malloc(n_v * sizeof(int));
     int cntr = 0;
-    while(cntr < n_v) {
+    while(cntr < n_v/2) {
         int ind = (float(rand())/RAND_MAX) * (N -1);
 
-        if(static_cast<int>(h_sites[ind].w)!= 2) {
+        if(static_cast<int>(h_sites[ind].w) == 0) {
             h_sites[ind].w = 2.0f;
             h_vacancies[cntr] = ind;
             cntr++;
         }
     }
+
+
+    cntr = 0;
+
+    while(cntr < n_v/2) {
+            int ind = (float(rand())/RAND_MAX) * (N -1);
+
+            if(static_cast<int>(h_sites[ind].w)== 1) {
+                h_sites[ind].w = 2.0f;
+                h_vacancies[n_v/2 + cntr] = ind;
+                cntr++;
+            }
+        }
+
     float4* d_sites;
     CHECK_ERROR(cudaMalloc((void**)&d_sites,sizeof(float4) * N));
     CHECK_ERROR(
@@ -137,7 +154,7 @@ void testRta(int sample_size) {
     utils::TestWriterCopyFromDeviceXyz<isingDeviceInput> writer(input,h_input,
             "test_simulation",mapper);
     simulation::RtaVacancyBarrierSimulationDevice<isingDeviceInput> rtaSimulation(
-            input, schedule, writer, stdrand, 16);
+            input, schedule, writer, stdrand, 16.55);
     rtaSimulation.run();
 
     free(h_sites);

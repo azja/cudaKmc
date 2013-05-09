@@ -21,6 +21,7 @@ const char* simulations_rta_vacancy = "-sim_rta_vacancy";
 
 int main(int argc, char* argv[]) {
 
+
 char* selection = "not given";
 if(argc > 2)
 selection = argv[1];
