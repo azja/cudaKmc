@@ -23,13 +23,16 @@ int main(int argc, char* argv[]) {
 
 
 char* selection = "not given";
-if(argc > 2)
+if(argc >= 2)
 selection = argv[1];
 
-int sample_size = atoi(argv[2]);
+
+int sample_size =  0;
+if(argc > 2)
+  sample_size = atoi(argv[2]);
 if(!sample_size)
     sample_size = 16;
-
+std::cout<<"Hello"<<std::endl;
 if (!strcmp(selection, neigbours) )
   tests::neigbours::test();
 else
