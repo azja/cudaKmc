@@ -60,7 +60,7 @@ public:
         int toSiteIndex;
         int fromSiteIndex;
 
-        int indexMax = d_input.z_t * d_input.n_v;
+        int indexMax = d_input.z_t * d_input.n_v -1;
 
         for (int i = 0; i < _schedule.getNSubSteps(); ++i) {
 
@@ -110,13 +110,14 @@ public:
                         d_transitions + d_input.n_v * d_input.z_t,utils::IfLessReturnIntUnary<float>(tot),0,
                         thrust::plus<int>());
 
-                if(index == d_input.z_t * d_input.n_v)
-                    std::cout<<"----------------index = "<<index<<"-----------------------"<<std::endl;
                 /*
                  * Exchange atoms
                  */
 
-                index = index < indexMax ? index : indexMax - 1;
+                /*
+                 *  It  is when round errors(?) may provide index to be equal IndexMax - this prevent it
+                 */
+                index = index <= indexMax ? index : indexMax;
 
                 int localizeFactor = (index ) / (h_input.z_t);
                 toSiteIndex = h_input.vacancies[localizeFactor];
