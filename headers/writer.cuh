@@ -4,6 +4,9 @@
  *  Created on: 04-05-2013
  *      Author: biborski
  */
+#ifndef WRITER_CUH_
+#define WRITER_CUH_
+
 #include <pthread.h>
 #include <fstream>
 #include <string>
@@ -13,8 +16,6 @@
 #include <thrust/functional.h>
 #include "utils.h"
 #include "anames.h"
-#ifndef WRITER_CUH_
-#define WRITER_CUH_
 
 namespace utils{
 

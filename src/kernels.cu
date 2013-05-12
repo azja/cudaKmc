@@ -1,58 +1,53 @@
 #include "../headers/kernels.cuh"
 
+__global__ void findNeigboursXyz(
+         const float4* const sites,
+         int4*  const neighbours,
+         float3 base1,
+         float3 base2,
+         float3 base3,
+         int3   dimensions,
+         float  radius,
+         int    offset,
+         int    beginFrom,
+         int    size)
+{
+    const int id = blockDim.x * blockIdx.x + threadIdx.x + beginFrom;
 
+    // TODO pass square of radius as input parameter
+    const float squareRadius = radius * radius;
 
+    // TODO store as float3 structures
+    extern __shared__ float4 shared_sites[];
 
-#ifndef DEBUG
+    // load site data assigned for this thread
+    float4 currentSite = sites[id];
 
- __global__ void findNeigboursXyz(const float4 * const sites,
-        int4 * neigbours, float3 base1, float3 base2, float3 base3,
-        int3 dimensions, float radius, int offset, int beginFrom, int size) {
+    int neighbourCounter = 0;
 
-    int id = blockDim.x * blockIdx.x + threadIdx.x + beginFrom;
-    radius = radius*radius;
-
-    extern __shared__ float4 X[];
-
-    int nCntr = 0;
-    int i,tile;
-
-    float x = sites[id].x;
-    float y = sites[id].y;
-    float z = sites[id].z;
-
-    float lx;
-    float ly;
-    float lz;
-
-    float xp;
-    float yp;
-    float zp;
-
-    for( i = 0, tile = 0; i < size; i += blockDim.x,++tile)
+    for (int i = 0, tile = 0; i < size; i += blockDim.x, ++tile)
     {
-
         if(tile * blockDim.x + threadIdx.x < size)
         {
-            float4 d = sites[tile * blockDim.x + threadIdx.x];
-            X[threadIdx.x] = d;
+            float4 site = sites[tile * blockDim.x + threadIdx.x];
+            shared_sites[threadIdx.x] = site;
         }
         else
         {
-            // nie koniecznie, ale lepiej miec pelna kontrole
-            X[threadIdx.x] = make_float4(0.0f, 0.0f, 0.0f, 0.0f);
+            shared_sites[threadIdx.x] = make_float4(0.0f, 0.0f, 0.0f, 0.0f);
         }
 
         __syncthreads();
 
-        for (int ii =0; ii < blockDim.x; ++ii)
+        for (int isite = 0; isite < blockDim.x; ++isite)
         {
-
-            if (tile * blockDim.x + ii != id && tile * blockDim.x + ii < size) //<<---- (ii != id jest OK)
+            if ((tile * blockDim.x + isite != id) && (tile * blockDim.x + isite < size))
             {
-                xp = X[ii].x - x;
-                yp = X[ii].y - y;
-                zp = X[ii].z - z;
+                float4 site = shared_sites[isite];
+
+                float xp = site.x - currentSite.x;
+                float yp = site.y - currentSite.y;
+                float zp = site.z - currentSite.z;
 
                 #pragma unroll
                 for (int k = -1; k <= 1; ++k)
@@ -63,28 +58,17 @@
                         #pragma unroll
                         for (int m = -1; m <= 1; ++m)
                         {
-                            lx = k * dimensions.x * base1.x
-                                    + l * dimensions.y * base2.x
-                                    + m * dimensions.z * base3.x;
-                            ly = k * dimensions.x * base1.y
-                                    + l * dimensions.y * base2.y
-                                    + m * dimensions.z * base3.y;
-                            lz = k * dimensions.x * base1.z
-                                    + l * dimensions.y * base2.z
-                                    + m * dimensions.z * base3.z;
+                            float lx = k * dimensions.x * base1.x + l * dimensions.y * base2.x + m * dimensions.z * base3.x;
+                            float ly = k * dimensions.x * base1.y + l * dimensions.y * base2.y + m * dimensions.z * base3.y;
+                            float lz = k * dimensions.x * base1.z + l * dimensions.y * base2.z + m * dimensions.z * base3.z;
 
-                            float distance = (
-                                    (xp + lx) * (xp + lx)
-                                    + (yp + ly) * (yp + ly)
-                                    + (zp + lz) * (zp + lz));
+                            float squareDistance = (xp + lx) * (xp + lx) + (yp + ly) * (yp + ly) + (zp + lz) * (zp + lz);
 
-                            if (distance < radius && nCntr < offset)
+                            // TODO use fabs
+                            if ((neighbourCounter < offset) && (squareDistance < squareRadius))
                             {
-                                neigbours[id * offset + nCntr].x = -k;
-                                neigbours[id * offset + nCntr].y = -l;
-                                neigbours[id * offset + nCntr].z = -m;
-                                neigbours[id * offset + nCntr].w =  tile * blockDim.x + ii;
-                                nCntr++;
+                                neighbours[id * offset + neighbourCounter] = make_int4(-k, -l, -m, tile * blockDim.x + isite);
+                                ++neighbourCounter;
                             }
                         }
                     }
@@ -92,11 +76,10 @@
             }
         }
 
-        __syncthreads(); //<<---- bez tego nie ma kontroli nad shared bufforem X.
+        __syncthreads();
     }
 }
 
-#endif
 
  /*
   * set float4 fields
@@ -178,7 +161,7 @@
 
 #ifdef DEBUG
 
- __global__ void findNeigboursXyz(const float4 * const sites,
+ __global__ void findNeigboursXyzGlobal(const float4 * const sites,
 		int4 * neigbours, float3 base1, float3 base2, float3 base3,
 		int3 dimensions, float radius, int offset, int beginFrom, int size) {
 

@@ -5,7 +5,7 @@ TEST_SRC_PATH_KERNELS = kernels
 TEST_SRC_PATH_ENERGY =  energy
 TEST_SRC_PATH_BUILDER = builder
 TEST_SRC_PATH_HELPERS = helpers
-OPT =  -O3  -arch compute_13 -Xcompiler -fopenmp -lgomp 
+OPT =  -O3  -arch compute_13 -Xcompiler -fopenmp 
 
 ifeq ($(CFG),debug)
 OPT +=  -DDEBUG

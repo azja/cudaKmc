@@ -4,10 +4,11 @@
  *  Created on: 22-03-2013
  *      Author: Andrzej Biborski
  */
-#include "anames.h"
-#include "nbuilder.h"
 #ifndef SAMPLE_H_
 #define SAMPLE_H_
+
+#include "anames.h"
+#include "nbuilder.h"
 
 namespace samples {
 

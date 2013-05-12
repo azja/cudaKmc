@@ -1,12 +1,10 @@
 /*
  * Responsible for finding neigbours and building the lists of them for each site
  */
-
-#include <thrust/device_vector.h>
-#include "kernels.cuh"
-
 #ifndef NBUILDER_H_
 #define NBUILDER_H_
+
+#include <thrust/device_vector.h>
 
 namespace nbuilder {
 

@@ -4,13 +4,13 @@
  *  Created on: 22-03-2013
  *      Author: Andrzej Biborski
  */
+#ifndef ANAMES_H_
+#define ANAMES_H_
+
 #include <thrust/tuple.h>
 #include <thrust/host_vector.h>
 #include <vector>
 #include <map>
-
-#ifndef ANAMES_H_
-#define ANAMES_H_
 
 namespace definitions {
 enum Atom {

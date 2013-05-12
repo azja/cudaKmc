@@ -5,12 +5,11 @@
  *      Author: Andrzej Biborski
  *  Only CPU
  */
-#include <stdlib.h>
-#include "anames.h"
-
 #ifndef LATTICEUTILS_H_
 #define LATTICEUTILS_H_
 
+#include <stdlib.h>
+#include "anames.h"
 
 namespace utils {
 namespace lattice {
