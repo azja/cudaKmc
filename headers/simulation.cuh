@@ -1,8 +1,9 @@
 /*
+ /*
  * simulation.cuh
  *
- *  Created on: 27-04-2013
- *      Author: biborski
+ * Created on: 27-04-2013
+ * Author: biborski
  */
 
 #ifndef SIMULATION_CUH_
@@ -36,7 +37,7 @@ struct Simulation {
  * Residence Time Algorithm (RTA) for Kinetic Monte Carlo
  */
 
-template<typename SimulationInput, int BlockSize = 512>
+template<typename SimulationInput, int BlockSize = 256>
 struct RtaVacancyBarrierSimulationDevice: public Simulation {
 
 public:
@@ -52,16 +53,18 @@ public:
     virtual void run() {
 
         d_input.ToHost(h_input);
+
         float time = 0.0f;
 
         float reducedTransitions = 0.0f;
         int toSiteIndex;
         int fromSiteIndex;
 
+        int indexMax = d_input.z_t * d_input.n_v;
+
         for (int i = 0; i < _schedule.getNSubSteps(); ++i) {
 
             _writer.Prepare();
-
 
             if (!_writer.StartWriteThread(time)) {
                 std::cout << "Error in writing thread creation - exiting"
@@ -75,7 +78,7 @@ public:
             for (int j = 0; j < _schedule.getNStep(); ++j) {
 
                 calculateTransitionParameterNoId<<<
-                        ((d_input.n_v) - 1) / BlockSize + 1, BlockSize>>>(
+                ((d_input.n_v) - 1) / BlockSize + 1, BlockSize>>>(
                         d_input,_beta);
                 cudaDeviceSynchronize();
                 CHECK_ERROR(cudaGetLastError());
@@ -87,12 +90,8 @@ public:
                  */
 
                 thrust::device_ptr<float> d_transitions =
-                        thrust::device_pointer_cast(d_input.transitions);
-                /*
-                thrust::transform_inclusive_scan(d_transitions,
-                        d_transitions + d_input.n_v * d_input.z_t,
-                        d_transitions, utils::FloatExponentWithFactor(-_beta),
-                        thrust::plus<float>()); */
+                thrust::device_pointer_cast(d_input.transitions);
+
                 thrust::inclusive_scan(d_transitions,d_transitions + d_input.n_v * d_input.z_t,
                         d_transitions);
 
@@ -104,42 +103,43 @@ public:
                 /*
                  * Find wi < R <= w_i+1 item
                  */
-                //std::cout<<reducedTransitions<<std::endl;
 
-                thrust::constant_iterator<float> totaler(
-                        reducedTransitions * _rand());
+                float tot = reducedTransitions * _rand();
 
-                int index = thrust::inner_product(d_transitions,
-                        d_transitions + d_input.n_v * d_input.z_t, totaler, 0,
-                        thrust::plus<int>(), utils::IfLessReturnInt<int>());
+                int index = thrust::transform_reduce(d_transitions,
+                        d_transitions + d_input.n_v * d_input.z_t,utils::IfLessReturnIntUnary<float>(tot),0,
+                        thrust::plus<int>());
 
+                if(index == d_input.z_t * d_input.n_v)
+                    std::cout<<"----------------index = "<<index<<"-----------------------"<<std::endl;
                 /*
                  * Exchange atoms
                  */
 
-                int localizeFactor = (index) / (h_input.z_t);
+                index = index < indexMax ? index : indexMax - 1;
+
+                int localizeFactor = (index ) / (h_input.z_t);
                 toSiteIndex = h_input.vacancies[localizeFactor];
                 int offset = toSiteIndex * d_input.z_t;
 
                 fromSiteIndex = h_input.jumpingNeigbours[offset
-                        + index % h_input.z_t].w;
+                + index % h_input.z_t].w;
 
                 float4 sourceSite;
                 CHECK_ERROR(cudaMemcpy(&sourceSite,d_input.sites + fromSiteIndex,sizeof(float4),cudaMemcpyDeviceToHost));
                 if(static_cast<int>(sourceSite.w) != 2) {
 
+                    exchangeFloat4w<<<((d_input.N) - 1) / BlockSize + 1, BlockSize>>>(
+                            fromSiteIndex, toSiteIndex, d_input.sites, d_input.N);
+                    cudaDeviceSynchronize();
 
-                exchangeFloat4w<<<((d_input.N) - 1) / BlockSize + 1, BlockSize>>>(
-                        fromSiteIndex, toSiteIndex, d_input.sites, d_input.N);
-                cudaDeviceSynchronize();
+                    set1dArrayElement<<<((d_input.n_v) - 1) / BlockSize + 1,
+                    BlockSize>>>((index) / (h_input.z_t), fromSiteIndex,
+                            d_input.vacancies, d_input.n_v);
 
-                set1dArrayElement<<<((d_input.n_v) - 1) / BlockSize + 1,
-                        BlockSize>>>((index) / (h_input.z_t), fromSiteIndex,
-                        d_input.vacancies, d_input.n_v);
+                    cudaDeviceSynchronize();
 
-                cudaDeviceSynchronize();
-
-                h_input.vacancies[(index) / (h_input.z_t)] = fromSiteIndex;
+                    h_input.vacancies[(index) / (h_input.z_t)] = fromSiteIndex;
                 }
 
             }
@@ -154,7 +154,6 @@ public:
     virtual ~RtaVacancyBarrierSimulationDevice() {
         d_input.FreeToDevice();
     }
-
 
 protected:
 

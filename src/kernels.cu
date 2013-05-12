@@ -17,7 +17,6 @@
     int nCntr = 0;
     int i,tile;
 
-
     float x = sites[id].x;
     float y = sites[id].y;
     float z = sites[id].z;

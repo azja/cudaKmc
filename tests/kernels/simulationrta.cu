@@ -25,13 +25,8 @@ namespace simulations {
 
 
 float stdrand() {
-    /*return static_cast<float>(rand()) / RAND_MAX;*/
-    static float start = time(0);
-    float rnd,IA=65539,IM=2147483648.0;
-    rnd=fmod(IA*start,IM);
-    start=rnd;
-    return rnd/IM;
-}
+    return static_cast<float>(rand() -1) / RAND_MAX;
+  }
 
 float h_energies[9] = { -0.12f, -0.125f, 0.04f, -0.125f, -0.05f, -0.04f, 0.04f, -0.04f,
         0.0f };
@@ -45,7 +40,7 @@ void testRta(int sample_size) {
 
     int z = 8;
     int z_t = z;
-    int n_v = 1460;//0.045 * CUBE_SIZE * CUBE_SIZE * CUBE_SIZE * 2;
+    int n_v =(0.045 * CUBE_SIZE * CUBE_SIZE * CUBE_SIZE )* 2;
     int atoms_n = 3;
     int N = CUBE_SIZE * CUBE_SIZE * CUBE_SIZE * 2;
     int3 dims = { CUBE_SIZE, CUBE_SIZE, CUBE_SIZE };
@@ -60,12 +55,12 @@ void testRta(int sample_size) {
 
 
 
-
+    srand(time(0));
 
     int *h_vacancies = (int*)malloc(n_v * sizeof(int));
     int cntr = 0;
     while(cntr < n_v/2) {
-        int ind = (float(rand())/RAND_MAX) * (N -1);
+        int ind = (stdrand()) * (N -1);
 
         if(static_cast<int>(h_sites[ind].w) == 0) {
             h_sites[ind].w = 2.0f;
@@ -78,7 +73,7 @@ void testRta(int sample_size) {
     cntr = 0;
 
     while(cntr < n_v/2) {
-            int ind = (float(rand())/RAND_MAX) * (N -1);
+            int ind = (stdrand()) * (N -1);
 
             if(static_cast<int>(h_sites[ind].w)== 1) {
                 h_sites[ind].w = 2.0f;

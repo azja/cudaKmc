@@ -190,10 +190,27 @@ template<typename T, int W  = 1>
 struct IfLessReturnInt {
 
     __host__ __device__ int operator()(const T& x, const T& y) {
-        return x < y ? W : 0;
+        return x <  y ? W : 0;
     }
 
+
 };
+
+template<typename T, int W  = 1>
+struct IfLessReturnIntUnary {
+
+    IfLessReturnIntUnary(const T arg) {
+        _arg = arg;
+    }
+    __host__ __device__ int operator()(const T& x) {
+        return x <=  _arg ? W: 0;
+    }
+private:
+    T _arg;
+
+};
+
+
 
 struct FloatExponentWithFactor {
 

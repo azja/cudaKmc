@@ -70,7 +70,7 @@ struct SimulationDeviceInput {
         CHECK_ERROR(cudaMemcpy(input.sites,sites,sizeof(float4) *N,cudaMemcpyHostToDevice));
 
         CHECK_ERROR(cudaMalloc((void**)&input.transitions,sizeof(float) * n_v * z_t));
-        CHECK_ERROR(cudaMemcpy(input.transitions,transitions,sizeof(float) * N * z_t,cudaMemcpyHostToDevice));
+        CHECK_ERROR(cudaMemcpy(input.transitions,transitions,sizeof(float) * n_v * z_t,cudaMemcpyHostToDevice));
 
         CHECK_ERROR(cudaMalloc((void**)&input.jumpingNeigbours,sizeof(int4) * n_v * z_t));
         CHECK_ERROR(cudaMemcpy(input.jumpingNeigbours,jumpingNeigbours,sizeof(int4) * n_v * z_t,cudaMemcpyHostToDevice));

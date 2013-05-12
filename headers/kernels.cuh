@@ -111,9 +111,11 @@ __global__ void calculateTransitionParameter(SimulationInput input) {
 
              int id2 = input.jumpingNeigbours[id1 * input.z_t + i].w;
            /*  input.transitions[thId * input.z_t + i] = 1000000000.0f;*/
-             input.transitions[thId * input.z_t + i] = 0.0f;
+             input.transitions[thId * input.z_t + i] = 1.0e-15f;
+
+
              if(static_cast<int>(input.sites[id1].w) != static_cast<int>(input.sites[id2].w)){
-             input.transitions[thId * input.z_t + i] = expf(-beta*(
+             input.transitions[thId * input.z_t + i] = exp(-beta*(
 
 
                  0.5 * exchangeCalcer(id1, id2, input.sites, input.neigbours,

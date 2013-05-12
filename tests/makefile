@@ -1,5 +1,6 @@
 INC=-I/../headers -I/kernels
 BASE_SRC_PATH = ../src
+BASE_HEAD_PATH = ../headers 
 TEST_SRC_PATH_KERNELS = kernels
 TEST_SRC_PATH_ENERGY =  energy
 TEST_SRC_PATH_BUILDER = builder
@@ -12,7 +13,7 @@ endif
 
 kmctest: utils.o anames.o kernels.o cpukernels.o sample.o sampled.o runtests.o isinge.o findneigbours.o simulationrta.o ising1.o  buildlattice.o transparams.o shared_tests.o
 	nvcc ${OPT} kernels.o anames.o cpukernels.o sample.o sampled.o isinge.o findneigbours.o utils.o simulationrta.o ising1.o buildlattice.o transparams.o shared_tests.o  runtests.o -o kmctest
-kernels.o: ${BASE_SRC_PATH}/kernels.cu
+kernels.o: ${BASE_SRC_PATH}/kernels.cu 
 	nvcc -c ${OPT} ${BASE_SRC_PATH}/kernels.cu
 utils.o: ${BASE_SRC_PATH}/utils.cu
 	nvcc -c ${OPT} ${BASE_SRC_PATH}/utils.cu

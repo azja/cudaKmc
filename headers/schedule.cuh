@@ -28,13 +28,6 @@ public:
         return _substeps;
     }
 
-    /*
-     * Sites are on device!!!
-     */
-
-
-    //virtual void actions(int step, float time = 0.0f) = 0;
-
 
     virtual ~Schedule() {}
 protected:
